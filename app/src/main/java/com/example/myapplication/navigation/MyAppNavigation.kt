@@ -23,17 +23,9 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val linear = Brush.linearGradient(
-        listOf(
-            MaterialTheme.colorScheme.surface,
-            MaterialTheme.colorScheme.surfaceVariant,
-            MaterialTheme.colorScheme.primaryContainer,
-        )
-    )
 
     Box(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.primaryContainer)
+        modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {
         Scaffold(
             modifier = Modifier,

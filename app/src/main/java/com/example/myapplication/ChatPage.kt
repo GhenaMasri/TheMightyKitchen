@@ -54,7 +54,8 @@ class ChatViewModel : ViewModel() {
 
 @Composable
 fun MessageItem(message: ChatMessage) {
-    val backgroundColor = if (message.isUserMessage) MaterialTheme.colorScheme.primary else Color.White
+    val backgroundColor =
+        if (message.isUserMessage) MaterialTheme.colorScheme.primary else Color.White
     val alignment = if (message.isUserMessage) Alignment.TopEnd else Alignment.TopStart
 
     Box(
@@ -97,7 +98,9 @@ fun ChatPage(viewModel: ChatViewModel) {
                 value = userInput,
                 onValueChange = { userInput = it },
                 placeholder = { Text("Type a message...") },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White, unfocusedContainerColor = Color.White
                 ),
@@ -110,13 +113,17 @@ fun ChatPage(viewModel: ChatViewModel) {
             )
 
             IconButton(
-
                 onClick = {
                     viewModel.sendMessage(userInput)
                     userInput = ""
                 }, modifier = Modifier.padding(start = 8.dp, end = 8.dp)
             ) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = null,
+                    modifier = Modifier.size(35.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
