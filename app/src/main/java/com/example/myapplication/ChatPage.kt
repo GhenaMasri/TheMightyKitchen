@@ -1,34 +1,46 @@
 package com.example.myapplication
 
-import android.graphics.drawable.Icon
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewModelScope
+import com.example.myapplication.network.getOpenAIResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // Model class for chat message
 data class ChatMessage(
@@ -40,18 +52,18 @@ class ChatViewModel : ViewModel() {
     val chatMessages: MutableState<List<ChatMessage>> = _chatMessages
 
     fun sendMessage(userInput: String) {
-        val userMessage = ChatMessage(userInput, isUserMessage = true)
+        /* val userMessage = ChatMessage(userInput, isUserMessage = true)
         val botResponse = ChatMessage("Bot response for: $userInput", isUserMessage = false)
         val updatedMessages = (_chatMessages.value + userMessage + botResponse)
         _chatMessages.value = updatedMessages
-    }/* viewModelScope.launch(Dispatchers.IO) {
-            val botResponse = getOpenAIResponse(userInput, "YOUR_OPENAI_SERVER_URL_HERE", "YOUR_API_KEY_HERE")
+    }*/ viewModelScope.launch(Dispatchers.IO) {
+            val botResponse = getOpenAIResponse(userInput, "http://192.168.10.31:5000/question")
             val userMessage = ChatMessage(userInput, isUserMessage = true)
             val botMessage = ChatMessage(botResponse, isUserMessage = false)
             _chatMessages.value = _chatMessages.value + userMessage + botMessage
-        }*/
+        }
+    }
 }
-
 @Composable
 fun MessageItem(message: ChatMessage) {
     val backgroundColor =

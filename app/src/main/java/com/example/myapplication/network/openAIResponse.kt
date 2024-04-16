@@ -9,7 +9,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 suspend fun getOpenAIResponse(userInput: String, apiKey: String): String {
-    val url = URL("serverUrl")
+    val url = URL("http://192.168.10.31:5000/question")
     val connection = url.openConnection() as HttpURLConnection
 
     connection.requestMethod = "POST"
@@ -18,7 +18,7 @@ suspend fun getOpenAIResponse(userInput: String, apiKey: String): String {
 
     val requestBody = """
         {
-            "prompt": "$userInput"
+            "role":"user","content":"$userInput"
         }
     """.trimIndent()
 
