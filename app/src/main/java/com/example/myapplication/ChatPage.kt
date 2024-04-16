@@ -1,3 +1,5 @@
+package com.example.myapplication
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,10 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavHostController
 import androidx.compose.ui.tooling.preview.Preview
 
 // Model class for chat message
@@ -29,7 +28,6 @@ data class ChatMessage(
 )
 
 class ChatViewModel : ViewModel() {
-    // LiveData for chat messages
     private val _chatMessages = mutableStateOf<List<ChatMessage>>(emptyList())
     val chatMessages: MutableState<List<ChatMessage>> = _chatMessages
 
@@ -41,7 +39,6 @@ class ChatViewModel : ViewModel() {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MessageItem(message: ChatMessage) {
     val backgroundColor = if (message.isUserMessage) Color.LightGray else Color.White

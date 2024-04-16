@@ -1,7 +1,7 @@
 package com.example.myapplication.navigation
 
-import ChatPage
-import ChatViewModel
+import com.example.myapplication.ChatPage
+import com.example.myapplication.ChatViewModel
 import com.example.myapplication.OrderPage
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
