@@ -1,6 +1,7 @@
 package com.example.myapplication.navigation
 
-import com.example.myapplication.ChatPage
+import ChatPage
+import ChatViewModel
 import com.example.myapplication.OrderPage
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
@@ -54,7 +55,7 @@ fun MyApp(modifier: Modifier = Modifier) {
                     OrderPage()
                 }
                 composable(route = Screens.Chat.name) {
-                    ChatPage()
+                    ChatPage(ChatViewModel())
                 }
             }
         }
