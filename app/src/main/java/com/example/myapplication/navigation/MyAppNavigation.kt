@@ -4,9 +4,6 @@ import com.example.myapplication.ChatPage
 import com.example.myapplication.ChatViewModel
 import com.example.myapplication.OrderPage
 import com.example.myapplication.ui.theme.MyApplicationTheme
-
-
-
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -36,7 +33,7 @@ fun MyApp(modifier: Modifier = Modifier) {
 
     Box(
         modifier = modifier
-            .background(linear)
+            .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
         Scaffold(
             modifier = Modifier,
