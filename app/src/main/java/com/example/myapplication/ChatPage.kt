@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,6 +64,13 @@ import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLConnection
 
 // Model class for chat message
 data class ChatMessage(
@@ -79,50 +87,74 @@ class ChatViewModel : ViewModel() {
 
     @OptIn(InternalAPI::class)
     fun sendMessage(userInput: String) {
+        Log.d("Debug sendMsg", "Entering the function")
         viewModelScope.launch {
             try {
-                // Add user message to chat messages
-                val userMessage = ChatMessage(userInput, isUserMessage = true)
-                _chatMessages.value = _chatMessages.value + userMessage
+                withContext(Dispatchers.IO) {
+                    // Network operations go here
+                    val userMessage = ChatMessage(userInput, isUserMessage = true)
+                    _chatMessages.value = _chatMessages.value + userMessage
 
-                // Make an HTTP GET request to google.com
-                //val client = HttpClient(Android)
-                val client = OkHttpClient()
+                    val url = URL("http://51.12.247.61:443/question")
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.setRequestProperty("Accept", "application/json")
+                    conn.outputStream.use { os ->
+                        val input = makeRequestBody(userInput).toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                    }
+                    conn.connect()
+                    val responseCode = conn.responseCode
 
-                val json = """
-    {
-        "role": "user",
-        "content": "$userInput"
-    }
-""".trimIndent()
+                    val p: Any? = if (responseCode == HttpURLConnection.HTTP_OK) {
+                        conn.inputStream // success
+                        Log.d("GhenaTestingHttpSuccess", "Success")
+                    } else {
+                        conn.errorStream
+                    }
 
-                val mediaType = MediaType.get("application/json")
+                    if (responseCode != HttpURLConnection.HTTP_OK) {
+                        Log.d(
+                            "PapyrusTesting",
+                            "Call to ... failed with status code $responseCode"
+                        )
+                        val headers = conn.headerFields
+                        for ((key, value) in headers) {
+                            Log.d("PapyrusTesting", "$key: $value")
+                        }
+                    } else {
+                        conn.inputStream.use { p ->
+                            BufferedReader(InputStreamReader(p)).use { reader ->
+                                val response = StringBuilder()
+                                var line: String?
+                                while (reader.readLine().also { line = it } != null) {
+                                    response.append(line)
+                                }
+                                // print result
+                                val responseBody = response.toString()
+                                val jsonObj = JSONObject(responseBody)
 
-                val request = Request.Builder().url("http://51.12.247.61:443/question")
-                    .addHeader("Content-Type", "application/json")
-                    .post(RequestBody.create(mediaType, json)).build()
-
-                val response = client.newCall(request).execute()/* val client = HttpClient()
-
-                 // Make HTTP POST request with JSON data
-                 val jsonBody = Json.encodeToString(mapOf("role" to "user", "content" to userInput))
-                 println(jsonBody)
-                 val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
-                     body = jsonBody
-                 }
-                 println("response: " + response.body())*/
-
-                // Add bot response to chat messages
-                println(response.body().toString())
-                val botMessage = ChatMessage(response.body().toString(), isUserMessage = false)
-                _chatMessages.value = _chatMessages.value + botMessage
+                                val answer = jsonObj.getString("Answer")
+                                val botMessage = ChatMessage(answer, isUserMessage = false)
+                                _chatMessages.value += botMessage
+                            }
+                        }
+                    }
+                }
             } catch (e: Exception) {
-                // Handle error
                 e.printStackTrace()
             }
         }
     }
 
+
+    private fun makeRequestBody(testQuery: String): String {
+        val content = JSONObject()
+        content.put("role","user")
+        content.put("content",testQuery)
+        return content.toString()
+    }
 }
 
 @Composable
@@ -165,7 +197,8 @@ fun ChatPage(viewModel: ChatViewModel) {
         }
 
         Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
             TextField(
                 value = userInput,
@@ -175,7 +208,8 @@ fun ChatPage(viewModel: ChatViewModel) {
                     .weight(1f)
                     .padding(horizontal = 10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White, unfocusedContainerColor = Color.White
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
