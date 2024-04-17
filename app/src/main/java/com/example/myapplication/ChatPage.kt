@@ -58,11 +58,16 @@ import io.ktor.client.call.body
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.InternalAPI
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 // Model class for chat message
 data class ChatMessage(
     val text: String, val isUserMessage: Boolean
 )
+@Serializable
+data class UserInput(val role: String, val content: String)
 
 class ChatViewModel : ViewModel() {
     private val serverUrl = "http://51.12.247.61:443/question"
@@ -80,10 +85,14 @@ class ChatViewModel : ViewModel() {
                 // Make an HTTP GET request to google.com
                 //val client = HttpClient(Android)
                 val client = HttpClient()
+                val userInput = UserInput("user", userInput)
 
+                // Encode the UserInput object to JSON
+                val jsonBody = Json.encodeToString(userInput)
+                println(jsonBody)
                 // Make HTTP POST request with JSON data
                 val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
-                    body = "{'role':'user','content':'$userInput'}"
+                    body = jsonBody
                 }
                 println("response: "+response.body())
 
