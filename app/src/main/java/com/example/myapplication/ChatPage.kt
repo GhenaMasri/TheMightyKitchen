@@ -54,6 +54,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.InternalAPI
@@ -84,10 +85,10 @@ class ChatViewModel : ViewModel() {
                 val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
                     body = "{'role':'user','content':'$userInput'}"
                 }
-                println("scode"+response.status)
+                println("response: "+response.body())
 
                 // Add bot response to chat messages
-                val botMessage = ChatMessage("Received response from test", isUserMessage = false)
+                val botMessage = ChatMessage(response.body(), isUserMessage = false)
                 _chatMessages.value = _chatMessages.value + botMessage
             } catch (e: Exception) {
                 // Handle error
