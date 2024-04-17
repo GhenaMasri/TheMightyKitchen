@@ -81,7 +81,7 @@ class ChatViewModel : ViewModel() {
                 val client = HttpClient()
 
                 // Make HTTP POST request with JSON data
-                val response: HttpResponse = client.post("http://51.12.247.61:443/test") {
+                val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
                     body = "{'role':'user','content':'$userInput'}"
                 }
                 println("scode"+response.status)
