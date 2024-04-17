@@ -38,9 +38,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.network.getOpenAIResponse
+import getOpenAIResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
 
 // Model class for chat message
 data class ChatMessage(
@@ -48,22 +56,78 @@ data class ChatMessage(
 )
 
 class ChatViewModel : ViewModel() {
+    private val serverUrl = "http://51.12.247.61:80/question"
     private val _chatMessages = mutableStateOf<List<ChatMessage>>(emptyList())
     val chatMessages: MutableState<List<ChatMessage>> = _chatMessages
 
-    fun sendMessage(userInput: String) {
-        /* val userMessage = ChatMessage(userInput, isUserMessage = true)
-        val botResponse = ChatMessage("Bot response for: $userInput", isUserMessage = false)
-        val updatedMessages = (_chatMessages.value + userMessage + botResponse)
-        _chatMessages.value = updatedMessages
-    }*/ viewModelScope.launch(Dispatchers.IO) {
-            val botResponse = getOpenAIResponse(userInput, "http://192.168.10.31:5000/question")
-            val userMessage = ChatMessage(userInput, isUserMessage = true)
-            val botMessage = ChatMessage(botResponse, isUserMessage = false)
-            _chatMessages.value = _chatMessages.value + userMessage + botMessage
+    private val client = HttpClient {
+        install(JsonFeature) {
+            serializer = GsonSerializer() // You can choose any JSON serializer here
         }
     }
+
+    // rest of your code...
+
+    fun sendMessage(userInput: String) {
+        viewModelScope.launch {
+            try {
+                // Add user message to chat messages
+                val userMessage = ChatMessage(userInput, isUserMessage = true)
+                _chatMessages.value = _chatMessages.value + userMessage
+
+                // Make a POST request to your VM using OkHttpClient
+                val requestBody = FormBody.Builder()
+                    .add("role", "user")
+                    .add("content", userInput)
+                    .build()
+
+                val request = Request.Builder()
+                    .url(serverUrl)
+                    .post(requestBody)
+                    .build()
+
+                val response = withContext(Dispatchers.IO) {
+                    client.newCall(request).execute().use { response ->
+                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                        response.body()?.string() ?: throw IOException("Response body is null")
+                    }
+                }
+
+                // Log the response from your VM
+                println("response: $response")
+
+                // Add bot response to chat messages
+                val botMessage = ChatMessage(response, isUserMessage = false)
+                _chatMessages.value = _chatMessages.value + botMessage
+            } catch (e: Exception) {
+                // Handle error
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+    /*fun sendMessage(userInput: String) {
+        viewModelScope.launch {
+            try {
+                // Add user message to chat messages
+                val userMessage = ChatMessage(userInput, isUserMessage = true)
+                _chatMessages.value = _chatMessages.value + userMessage
+
+                // Get bot response
+                val botResponse = getOpenAIResponse(userInput, serverUrl)
+                println(botResponse)
+                // Add bot response to chat messages
+                val botMessage = ChatMessage(botResponse, isUserMessage = false)
+                _chatMessages.value = _chatMessages.value + botMessage
+            } catch (e: Exception) {
+                // Handle error
+                e.printStackTrace()
+            }
+        }
+    }*/
 }
+
 @Composable
 fun MessageItem(message: ChatMessage) {
     val backgroundColor =
@@ -153,4 +217,3 @@ fun PreviewChatPage() {
     val viewModel = ChatViewModel()
     ChatPage(viewModel)
 }
-
