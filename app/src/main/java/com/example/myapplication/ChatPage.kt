@@ -50,8 +50,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.IOException
 import io.ktor.client.*
 import io.ktor.client.call.body
@@ -61,11 +59,16 @@ import io.ktor.util.InternalAPI
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 
 // Model class for chat message
 data class ChatMessage(
     val text: String, val isUserMessage: Boolean
 )
+
 @Serializable
 data class UserInput(val role: String, val content: String)
 
@@ -84,20 +87,34 @@ class ChatViewModel : ViewModel() {
 
                 // Make an HTTP GET request to google.com
                 //val client = HttpClient(Android)
-                val client = HttpClient()
-                val userInput1 = UserInput("user", userInput)
+                val client = OkHttpClient()
 
-                // Encode the UserInput object to JSON
-                val jsonBody = Json.encodeToString(userInput1)
-                println(jsonBody)
-                // Make HTTP POST request with JSON data
-                val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
-                    body = jsonBody
-                }
-                println("response: "+response.body())
+                val json = """
+    {
+        "role": "user",
+        "content": "$userInput"
+    }
+""".trimIndent()
+
+                val mediaType = MediaType.get("application/json")
+
+                val request = Request.Builder().url("http://51.12.247.61:443/question")
+                    .addHeader("Content-Type", "application/json")
+                    .post(RequestBody.create(mediaType, json)).build()
+
+                val response = client.newCall(request).execute()/* val client = HttpClient()
+
+                 // Make HTTP POST request with JSON data
+                 val jsonBody = Json.encodeToString(mapOf("role" to "user", "content" to userInput))
+                 println(jsonBody)
+                 val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
+                     body = jsonBody
+                 }
+                 println("response: " + response.body())*/
 
                 // Add bot response to chat messages
-                val botMessage = ChatMessage(response.body(), isUserMessage = false)
+                println(response.body().toString())
+                val botMessage = ChatMessage(response.body().toString(), isUserMessage = false)
                 _chatMessages.value = _chatMessages.value + botMessage
             } catch (e: Exception) {
                 // Handle error
