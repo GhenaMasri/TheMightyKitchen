@@ -41,7 +41,9 @@ import androidx.lifecycle.viewModelScope
 import getOpenAIResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.utils.EmptyContent.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,14 +62,6 @@ class ChatViewModel : ViewModel() {
     private val _chatMessages = mutableStateOf<List<ChatMessage>>(emptyList())
     val chatMessages: MutableState<List<ChatMessage>> = _chatMessages
 
-    private val client = HttpClient {
-        install(JsonFeature) {
-            serializer = GsonSerializer() // You can choose any JSON serializer here
-        }
-    }
-
-    // rest of your code...
-
     fun sendMessage(userInput: String) {
         viewModelScope.launch {
             try {
@@ -75,29 +69,15 @@ class ChatViewModel : ViewModel() {
                 val userMessage = ChatMessage(userInput, isUserMessage = true)
                 _chatMessages.value = _chatMessages.value + userMessage
 
-                // Make a POST request to your VM using OkHttpClient
-                val requestBody = FormBody.Builder()
-                    .add("role", "user")
-                    .add("content", userInput)
-                    .build()
+                // Make an HTTP GET request to google.com
+                val client = HttpClient()
+                val response: HttpResponse = client.get("http://51.12.247.61:80/test")
 
-                val request = Request.Builder()
-                    .url(serverUrl)
-                    .post(requestBody)
-                    .build()
-
-                val response = withContext(Dispatchers.IO) {
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                        response.body()?.string() ?: throw IOException("Response body is null")
-                    }
-                }
-
-                // Log the response from your VM
-                println("response: $response")
+                // Log the response from Google
+                println("scode"+response.status)
 
                 // Add bot response to chat messages
-                val botMessage = ChatMessage(response, isUserMessage = false)
+                val botMessage = ChatMessage("Received response from test", isUserMessage = false)
                 _chatMessages.value = _chatMessages.value + botMessage
             } catch (e: Exception) {
                 // Handle error
