@@ -45,6 +45,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.utils.EmptyContent.contentType
+import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +53,10 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.util.InternalAPI
 
 // Model class for chat message
 data class ChatMessage(
@@ -59,10 +64,11 @@ data class ChatMessage(
 )
 
 class ChatViewModel : ViewModel() {
-    private val serverUrl = "http://51.12.247.61:80/question"
+    private val serverUrl = "http://51.12.247.61:443/question"
     private val _chatMessages = mutableStateOf<List<ChatMessage>>(emptyList())
     val chatMessages: MutableState<List<ChatMessage>> = _chatMessages
 
+    @OptIn(InternalAPI::class)
     fun sendMessage(userInput: String) {
         viewModelScope.launch {
             try {
@@ -71,10 +77,13 @@ class ChatViewModel : ViewModel() {
                 _chatMessages.value = _chatMessages.value + userMessage
 
                 // Make an HTTP GET request to google.com
-                val client = HttpClient(Android)
-                val response: HttpResponse = client.get("http://51.12.247.61:80/test")
+                //val client = HttpClient(Android)
+                val client = HttpClient()
 
-                // Log the response from Google
+                // Make HTTP POST request with JSON data
+                val response: HttpResponse = client.post("http://51.12.247.61:443/test") {
+                    body = "{'role':'user','content':'$userInput'}"
+                }
                 println("scode"+response.status)
 
                 // Add bot response to chat messages
@@ -87,26 +96,6 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-
-    /*fun sendMessage(userInput: String) {
-        viewModelScope.launch {
-            try {
-                // Add user message to chat messages
-                val userMessage = ChatMessage(userInput, isUserMessage = true)
-                _chatMessages.value = _chatMessages.value + userMessage
-
-                // Get bot response
-                val botResponse = getOpenAIResponse(userInput, serverUrl)
-                println(botResponse)
-                // Add bot response to chat messages
-                val botMessage = ChatMessage(botResponse, isUserMessage = false)
-                _chatMessages.value = _chatMessages.value + botMessage
-            } catch (e: Exception) {
-                // Handle error
-                e.printStackTrace()
-            }
-        }
-    }*/
 }
 
 @Composable

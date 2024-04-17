@@ -60,8 +60,8 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
-    implementation("io.ktor:ktor-client-json:2.3.10") // Add this line
     implementation("io.ktor:ktor-client-core:2.3.10")
+    implementation("io.ktor:ktor-client-json:2.3.10")
     implementation("io.ktor:ktor-client-android:2.3.10") // for Android
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
