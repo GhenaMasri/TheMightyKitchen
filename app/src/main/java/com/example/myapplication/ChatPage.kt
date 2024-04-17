@@ -85,10 +85,10 @@ class ChatViewModel : ViewModel() {
                 // Make an HTTP GET request to google.com
                 //val client = HttpClient(Android)
                 val client = HttpClient()
-                val userInput = UserInput("user", userInput)
+                val userInput1 = UserInput("user", userInput)
 
                 // Encode the UserInput object to JSON
-                val jsonBody = Json.encodeToString(userInput)
+                val jsonBody = Json.encodeToString(userInput1)
                 println(jsonBody)
                 // Make HTTP POST request with JSON data
                 val response: HttpResponse = client.post("http://51.12.247.61:443/question") {
