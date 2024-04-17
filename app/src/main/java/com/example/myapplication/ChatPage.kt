@@ -40,6 +40,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import getOpenAIResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
@@ -70,7 +71,7 @@ class ChatViewModel : ViewModel() {
                 _chatMessages.value = _chatMessages.value + userMessage
 
                 // Make an HTTP GET request to google.com
-                val client = HttpClient()
+                val client = HttpClient(Android)
                 val response: HttpResponse = client.get("http://51.12.247.61:80/test")
 
                 // Log the response from Google
